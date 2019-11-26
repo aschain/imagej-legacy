@@ -31,10 +31,12 @@
 
 package net.imagej.legacy.command;
 
-import java.awt.Menu;
-import java.awt.MenuBar;
-import java.awt.MenuItem;
-import java.awt.MenuShortcut;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
+
+import java.awt.event.InputEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -110,29 +112,31 @@ public class LegacyCommandFinder {
 	/** Creates a table mapping legacy ImageJ command labels to menu paths. */
 	private Map<String, MenuPath> parseMenus() {
 		final Map<String, MenuPath> menuTable = new HashMap<>();
-		final MenuBar menubar = legacyService.getIJ1Helper().getMenuBar();
+		final JMenuBar menubar = legacyService.getIJ1Helper().getMenuBar();
 		if (menubar == null) return menuTable;
 		final int menuCount = menubar.getMenuCount();
 		for (int i = 0; i < menuCount; i++) {
-			final Menu menu = menubar.getMenu(i);
+			final JMenu menu = menubar.getMenu(i);
 			parseMenu(menu, i, new MenuPath(), menuTable);
 		}
 		return menuTable;
 	}
 
-	private void parseMenu(final MenuItem menuItem, final double weight,
+	private void parseMenu(JMenuItem menuItem, final double weight,
 		final MenuPath path, final Map<String, MenuPath> menuTable)
 	{
 		// build menu entry
+		if(menuItem==null) menuItem=new JMenuItem("-");
 		final String name = menuItem.getLabel();
 		final MenuEntry entry = new MenuEntry(name, weight);
-		final MenuShortcut shortcut = menuItem.getShortcut();
+		//final MenuShortcut shortcut = menuItem.getShortcut();
+		final KeyStroke shortcut = menuItem.getAccelerator();
 		if (shortcut != null) {
-			// convert AWT MenuShortcut to ImageJ Accelerator
-			final int code = shortcut.getKey();
+			// convert Swing KeyStroke to ImageJ Accelerator
+			final int code = shortcut.getKeyCode();
 			final boolean meta = Accelerator.isCtrlReplacedWithMeta();
 			final boolean ctrl = !meta;
-			final boolean shift = shortcut.usesShiftModifier();
+			final boolean shift = (shortcut.getModifiers() & InputEvent.SHIFT_DOWN_MASK)>0;
 			final KeyCode keyCode = KeyCode.get(code);
 			final InputModifiers modifiers = new InputModifiers(false, false, ctrl,
 				meta, shift, false, false, false);
@@ -141,14 +145,14 @@ public class LegacyCommandFinder {
 		}
 		path.add(entry);
 
-		if (menuItem instanceof Menu) { // non-leaf
+		if (menuItem instanceof JMenu) { // non-leaf
 			// recursively process child menu items
-			final Menu menu = (Menu) menuItem;
+			final JMenu menu = (JMenu) menuItem;
 			final int itemCount = menu.getItemCount();
 			double w = -1;
 			for (int i = 0; i < itemCount; i++) {
-				final MenuItem item = menu.getItem(i);
-				final boolean isSeparator = item.getLabel().equals("-");
+				final JMenuItem item = menu.getItem(i);
+				final boolean isSeparator = (item==null || item.getLabel().equals("-"));
 				if (isSeparator) w += 10;
 				else w += 1;
 				parseMenu(item, w, new MenuPath(path), menuTable);

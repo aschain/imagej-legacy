@@ -59,10 +59,10 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.Image;
-import java.awt.Menu;
-import java.awt.MenuBar;
-import java.awt.MenuItem;
-import java.awt.Panel;
+//import java.awt.Menu;
+//import java.awt.MenuBar;
+//import java.awt.MenuItem;
+//import java.awt.Panel;
 import java.awt.Window;
 import java.awt.image.ImageProducer;
 import java.io.File;
@@ -82,6 +82,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import net.imagej.display.ImageDisplay;
@@ -381,7 +385,7 @@ public class IJ1Helper extends AbstractContextual {
 		return Toolbar.getInstance();
 	}
 
-	public Panel getStatusBar() {
+	public JPanel getStatusBar() {
 		if (!hasInstance()) return null;
 		return IJ.getInstance().getStatusBar();
 	}
@@ -459,21 +463,24 @@ public class IJ1Helper extends AbstractContextual {
 	}
 
 	public void updateRecentMenu(final String path) {
-		final Menu menu = Menus.getOpenRecentMenu();
+		final JMenu menu = Menus.getOpenRecentMenu();
 		if (menu == null) return;
 		final int n = menu.getItemCount();
 		int index = -1;
 		for (int i = 0; i < n; i++) {
-			if (menu.getItem(i).getLabel().equals(path)) {
+			JMenuItem mi=menu.getItem(i);
+			if (mi!=null && mi.getText().equals(path)) {
 				index = i;
 				break;
 			}
 		}
 		// Move to most recent
 		if (index > 0) {
-			final MenuItem item = menu.getItem(index);
-			menu.remove(index);
-			menu.insert(item, 0);
+			final JMenuItem item = menu.getItem(index);
+			if(item!=null) {
+				menu.remove(index);
+				menu.insert(item, 0);
+			}
 		}
 		// not found, so replace oldest
 		else if (index < 0) {
@@ -481,7 +488,7 @@ public class IJ1Helper extends AbstractContextual {
 			if (count >= Menus.MAX_OPEN_RECENT_ITEMS) {
 				menu.remove(count - 1);
 			}
-			final MenuItem item = new MenuItem(path);
+			final JMenuItem item = new JMenuItem(path);
 			final ImageJ instance = IJ.getInstance();
 			if (instance != null) item.addActionListener(instance);
 			menu.insert(item, 0);
@@ -796,9 +803,9 @@ public class IJ1Helper extends AbstractContextual {
 		return Menus.getShortcuts();
 	}
 
-	public MenuBar getMenuBar() {
+	public JMenuBar getMenuBar() {
 		final ImageJ ij1 = hasInstance() ? IJ.getInstance() : null;
-		return ij1 == null ? null : ij1.getMenuBar();
+		return ij1 == null ? null : ij1.getJMenuBar();
 	}
 
 	/**
@@ -895,9 +902,9 @@ public class IJ1Helper extends AbstractContextual {
 	private static class IJ1MenuWrapper {
 
 		final ImageJ ij1;
-		final MenuBar menuBar = Menus.getMenuBar();
+		final JMenuBar menuBar = Menus.getMenuBar();
 		final MenuCache menuCache = new MenuCache();
-		final Set<Menu> separators = new HashSet<>();
+		final Set<JMenu> separators = new HashSet<>();
 
 		private IJ1MenuWrapper(final ImageJ ij1) {
 			this.ij1 = ij1;
@@ -916,17 +923,17 @@ public class IJ1Helper extends AbstractContextual {
 		 * <li>Edit > Options > ImageJ2 plugins > Discombobulator</li>
 		 * </ul>
 		 */
-		private MenuItem create(final MenuPath path, final boolean reuseExisting) {
+		private JMenuItem create(final MenuPath path, final boolean reuseExisting) {
 			// Find the menu structure where we can insert our command.
 			// NB: size - 1 is the leaf position, so we want to go to size - 2 to
 			// find the parent menu location
-			final Menu menu = getParentMenu(path, path.size() - 2);
+			final JMenu menu = getParentMenu(path, path.size() - 2);
 			final String label = path.getLeaf().getName();
 			// If we are overriding an item, find the item being overridden
 			if (reuseExisting) {
 				for (int i = 0; i < menu.getItemCount(); i++) {
-					final MenuItem item = menu.getItem(i);
-					if (label.equals(item.getLabel())) {
+					final JMenuItem item = menu.getItem(i);
+					if (item!=null && label.equals(item.getLabel())) {
 						return item;
 					}
 				}
@@ -936,7 +943,7 @@ public class IJ1Helper extends AbstractContextual {
 				separators.add(menu);
 			}
 			// Otherwise, we are creating a new item
-			final MenuItem item = new MenuItem(label);
+			final JMenuItem item = new JMenuItem(label);
 			menu.insert(item, getIndex(menu, label));
 			item.addActionListener(ij1);
 			return item;
@@ -945,12 +952,12 @@ public class IJ1Helper extends AbstractContextual {
 		/**
 		 * Helper method to look up special cases for menu weighting
 		 */
-		private int getIndex(final Menu menu, final String label) {
+		private int getIndex(final JMenu menu, final String label) {
 			// Place export sub-menu after import sub-menu
 			if (menu.getLabel().equals("File") && label.equals("Export")) {
 				for (int i = 0; i < menu.getItemCount(); i++) {
-					final MenuItem menuItem = menu.getItem(i);
-					if (menuItem.getLabel().equals("Import")) return i + 1;
+					final JMenuItem menuItem = menu.getItem(i);
+					if (menuItem!=null && menuItem.getLabel().equals("Import")) return i + 1;
 				}
 			}
 
@@ -959,47 +966,47 @@ public class IJ1Helper extends AbstractContextual {
 			return menu.getItemCount();
 		}
 
-		/** Recursive helper method to build the final {@link Menu} structure. */
-		private Menu getParentMenu(final MenuPath menuPath, final int depth) {
+		/** Recursive helper method to build the final {@link JMenu} structure. */
+		private JMenu getParentMenu(final MenuPath menuPath, final int depth) {
 			final MenuEntry currentItem = menuPath.get(depth);
 			final String currentLabel = currentItem.getName();
 			// Check to see if we already know the menu associated with the desired
 			// label/path
-			final Menu cached = menuCache.get(menuPath, depth);
+			final JMenu cached = menuCache.get(menuPath, depth);
 			if (cached != null) return cached;
 
 			// We are at the root of the menu, so see if we have a matching menu
 			if (depth == 0) {
 				// Special case check the help menu
 				if ("Help".equals(currentLabel)) {
-					final Menu menu = menuBar.getHelpMenu();
+					final JMenu menu = menuBar.getHelpMenu();
 					menuCache.put(menuPath, depth, menu);
 					return menu;
 				}
 				// Check the other menus of the menu bar to see if our desired label
 				// already exists
 				for (int i = 0; i < menuBar.getMenuCount(); i++) {
-					final Menu menu = menuBar.getMenu(i);
-					if (currentLabel.equals(menu.getLabel())) {
+					final JMenu menu = menuBar.getMenu(i);
+					if (currentLabel.equals(menu.getText())) {
 						menuCache.put(menuPath, depth, menu);
 						return menu;
 					}
 				}
 				// Didn't find a match so we have to create a new menu entry
-				final Menu menu = new Menu(currentLabel);
+				final JMenu menu = new JMenu(currentLabel);
 				menuBar.add(menu);
 				menuCache.put(menuPath, depth, menu);
 				return menu;
 			}
-			final Menu parent = getParentMenu(menuPath, depth - 1);
-			// Once the parent of this entry is obtained, we need to check if it
+			final JMenu parent = getParentMenu(menuPath, depth - 1);
+			// OncJe the parent of this entry is obtained, we need to check if it
 			// already contains the current entry.
 			for (int i = 0; i < parent.getItemCount(); i++) {
-				final MenuItem item = parent.getItem(i);
-				if (currentLabel.equals(item.getLabel())) {
-					if (item instanceof Menu) {
+				final JMenuItem item = parent.getItem(i);
+				if (item!=null && currentLabel.equals(item.getText())) {
+					if (item instanceof JMenu) {
 						// Found a menu entry that matches our desired label, so return
-						final Menu menu = (Menu) item;
+						final JMenu menu = (JMenu) item;
 						menuCache.put(menuPath, depth, menu);
 						return menu;
 					}
@@ -1015,8 +1022,8 @@ public class IJ1Helper extends AbstractContextual {
 			}
 			// An existing entry in the parent menu was not found, so we need to
 			// create a new entry.
-			final Menu menu = new Menu(currentLabel);
-			parent.insert(menu, getIndex(parent, menu.getLabel()));
+			final JMenu menu = new JMenu(currentLabel);
+			parent.insert(menu, getIndex(parent, menu.getText()));
 
 			menuCache.put(menuPath, depth, menu);
 			return menu;
@@ -1026,13 +1033,13 @@ public class IJ1Helper extends AbstractContextual {
 
 	private static class MenuCache {
 
-		private final Map<String, Menu> map = new HashMap<>();
+		private final Map<String, JMenu> map = new HashMap<>();
 
-		public void put(final MenuPath menuPath, final int depth, final Menu menu) {
+		public void put(final MenuPath menuPath, final int depth, final JMenu menu) {
 			map.put(key(menuPath, depth), menu);
 		}
 
-		public Menu get(final MenuPath menuPath, final int depth) {
+		public JMenu get(final MenuPath menuPath, final int depth) {
 			return map.get(key(menuPath, depth));
 		}
 

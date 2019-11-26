@@ -34,9 +34,9 @@ package net.imagej.legacy.search;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.EventQueue;
-import java.awt.Menu;
-import java.awt.MenuBar;
-import java.awt.MenuItem;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
@@ -209,20 +209,20 @@ public class SearchBarHacker {
 	private void nullShortcut(final IJ1Helper ij1Helper, final String menuLabel,
 		final String subMenuLabel, final String itemLabel)
 	{
-		final MenuBar menuBar = ij1Helper.getMenuBar();
+		final JMenuBar menuBar = ij1Helper.getMenuBar();
 		for (int m = 0; m < menuBar.getMenuCount(); m++) {
-			final Menu menu = menuBar.getMenu(m);
+			final JMenu menu = menuBar.getMenu(m);
 			if (!menuLabel.equals(menu.getLabel())) continue;
 			for (int s = 0; s < menu.getItemCount(); s++) {
-				final MenuItem ms = menu.getItem(s);
-				if (!(ms instanceof Menu)) continue;
-				final Menu subMenu = (Menu) ms;
+				final JMenuItem ms = menu.getItem(s);
+				if (!(ms instanceof JMenu)) continue;
+				final JMenu subMenu = (JMenu) ms;
 				if (!subMenuLabel.equals(subMenu.getLabel())) continue;
 				for (int i = 0; i < subMenu.getItemCount(); i++) {
-					final MenuItem mi = subMenu.getItem(i);
-					if (!itemLabel.equals(mi.getLabel())) continue;
+					final JMenuItem mi = subMenu.getItem(i);
+					if (mi==null || !itemLabel.equals(mi.getLabel())) continue;
 					subMenu.remove(i);
-					mi.deleteShortcut();
+					mi.setAccelerator(null);;
 					subMenu.insert(mi, i);
 				}
 			}
