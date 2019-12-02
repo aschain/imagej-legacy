@@ -36,9 +36,8 @@ import ij.ImageJ;
 import ij.Menus;
 import ij.plugin.PlugIn;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
+import java.awt.Menu;
+import java.awt.MenuItem;
 import java.awt.event.ActionListener;
 import java.util.Hashtable;
 
@@ -109,19 +108,12 @@ public class SwitchToModernMode implements PlugIn {
 		if (commands != null && !commands.containsKey(MENU_LABEL)) {
 			ActionListener ij1 = IJ.getInstance();
 			if (ij1 != null) {
-				JMenu helpMenu = null; //Menus.getMenuBar().getHelpMenu();
-				JMenuBar mbar=Menus.getMenuBar();
-				for(int i=0;i<mbar.getMenuCount();i++) {
-					helpMenu=mbar.getMenu(i);
-					if(helpMenu!=null && helpMenu.getText().equals("Help"))break;
-				}
-				if(helpMenu==null)return;
-				final JMenuItem item = new JMenuItem(MENU_LABEL);
+				final Menu helpMenu = Menus.getMenuBar().getHelpMenu();
+				final MenuItem item = new MenuItem(MENU_LABEL);
 				item.addActionListener(ij1);
 				int index = helpMenu.getItemCount();
 				while (index > 0) {
-					JMenuItem mi=helpMenu.getItem(index - 1);
-					final String label = mi==null?null:mi.getText();
+					final String label = helpMenu.getItem(index - 1).getLabel();
 					if (label.equals("-") || label.startsWith("Update") || label.endsWith("Wiki")) {
 						index--;
 					} else {
