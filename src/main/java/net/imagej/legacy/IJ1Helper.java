@@ -59,10 +59,6 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.Image;
-//import java.awt.Menu;
-//import java.awt.MenuBar;
-//import java.awt.MenuItem;
-//import java.awt.Panel;
 import java.awt.Window;
 import java.awt.image.ImageProducer;
 import java.io.File;
@@ -934,9 +930,9 @@ public class IJ1Helper extends AbstractContextual {
 	}
 
 	/**
-	 * Helper class for wrapping ImageJ2 menu paths to ImageJ1 {@link Menu}
+	 * Helper class for wrapping ImageJ2 menu paths to ImageJ1 {@link JMenu}
 	 * structures, and inserting them into the proper positions of the
-	 * {@link MenuBar}.
+	 * {@link JMenuBar}.
 	 */
 	private static class IJ1MenuWrapper {
 
