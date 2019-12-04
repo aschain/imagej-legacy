@@ -31,7 +31,7 @@
 
 package net.imagej.legacy.ui;
 
-import java.awt.Panel;
+import javax.swing.JPanel;
 
 import net.imagej.legacy.LegacyService;
 
@@ -45,7 +45,7 @@ import org.scijava.widget.UIComponent;
  * @author Mark Hiner
  */
 public class LegacyStatusBar extends AbstractLegacyAdapter implements
-	UIComponent<Panel>, StatusBar
+	UIComponent<JPanel>, StatusBar
 {
 
 	public LegacyStatusBar(final LegacyService legacyService) {
@@ -85,13 +85,13 @@ public class LegacyStatusBar extends AbstractLegacyAdapter implements
 	}
 
 	@Override
-	public Panel getComponent() {
+	public JPanel getComponent() {
 		return dummy() ? null : helper().getStatusBar();
 	}
 
 	@Override
-	public Class<Panel> getComponentType() {
-		return Panel.class;
+	public Class<JPanel> getComponentType() {
+		return JPanel.class;
 	}
 
 }
