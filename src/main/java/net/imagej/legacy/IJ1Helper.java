@@ -1013,11 +1013,11 @@ public class IJ1Helper extends AbstractContextual {
 			// We are at the root of the menu, so see if we have a matching menu
 			if (depth == 0) {
 				// Special case check the help menu
-				if ("Help".equals(currentLabel)) {
-					final JMenu menu = menuBar.getHelpMenu();
-					menuCache.put(menuPath, depth, menu);
-					return menu;
-				}
+				//if ("Help".equals(currentLabel)) {
+				//	final JMenu menu = menuBar.getHelpMenu();
+				//	menuCache.put(menuPath, depth, menu);
+				//	return menu;
+				//}
 				// Check the other menus of the menu bar to see if our desired label
 				// already exists
 				for (int i = 0; i < menuBar.getMenuCount(); i++) {
