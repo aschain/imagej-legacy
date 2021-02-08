@@ -298,12 +298,11 @@ Institute of Molecular Cell Biology and Genetics.</license.copyrightOwners>
 				       <goal>exec</goal>
 				    </goals>
 				    <configuration>
-				      <executable>../copyToFiji.bat</executable>
+				      <executable>bash</executable>
 				      <workingDirectory>${basedir}</workingDirectory>
 				      <arguments>
-				    	  <argument>jars</argument>
-				    	  <argument>imagej-legacy</argument>
-				    	  <argument>${basedir}/target/${project.build.finalName}.jar</argument>
+				    	  <argument>-c</argument>
+				    	  <argument>"../copyToFiji.sh jars ${project.artifactId} target/${project.build.finalName}.jar"</argument>
 				      </arguments>
 				    </configuration>
 				  </execution>
